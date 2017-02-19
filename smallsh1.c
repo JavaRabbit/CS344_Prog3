@@ -62,7 +62,7 @@ void prompt(){
    getcwd(cwd, sizeof(cwd));
    printf("Current dir:%s\n", cwd);
    // chdir
-   chdir("cd");
+   chdir(getenv("HOME"));
    getcwd(cwd, sizeof(cwd));
    printf("current dir:%s\n", cwd);
   }
