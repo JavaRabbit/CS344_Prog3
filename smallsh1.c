@@ -43,6 +43,7 @@ void prompt(){
   printf("The len is %lu\n", strlen(enteredCommand));
 
   //  if user types in 'exit', break out of while loop
+  // if user tries to exit &
   //  fgets adds a newline to entered text eg.  exit\n\0
   //  To get rid of this newline change \n to \0
   enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
@@ -50,12 +51,6 @@ void prompt(){
    printf("exiting loop\n");
    break;
   }
- }
+ }  // end of while loop
 
-
- printf(": ");
- char line[MAX_LENGTH]; 
- // get input from user
- fgets(line, MAX_LENGTH, stdin);
- printf("you entered: %s\n", line); 
-}
+} // end of prompt() 
