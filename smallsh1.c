@@ -36,16 +36,10 @@ void main(){
 void prompt(){
  bool runPrompt = true;
  while(runPrompt){
-  /* 
- * Display ": " prompt to user
- * Set up string variable to hold user's entered command
- * The length of this string is MAX_LENGTH (2048) + 1 for the null terminator
- *
- * */
   printf(": ");
   char enteredCommand[MAX_LENGTH +1]; 
   fgets(enteredCommand, MAX_LENGTH, stdin);
-  printf("You entered: %s\n", enteredCommand); 
+  //printf("You entered: %s\n", enteredCommand); 
 
   //  if user types in 'exit', break out of while loop
   // if user tries to exit &
@@ -57,6 +51,17 @@ void prompt(){
    break;
   }
 
+  // Check for comment starting with #
+  
+
+
+  // check if user entered a blank line. If so, shell should
+  // do nothing. Use continue
+  char firstChar = enteredCommand[0];
+  if('\n' == firstChar){
+   continue;
+  }
+ 
   if(strcmp(enteredCommand, "cd") == 0){
    char cwd[1024];
    getcwd(cwd, sizeof(cwd));
