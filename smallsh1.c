@@ -40,6 +40,7 @@ void prompt(){
   char enteredCommand[MAX_LENGTH +1]; 
   fgets(enteredCommand, MAX_LENGTH, stdin);
   //printf("You entered: %s\n", enteredCommand); 
+  //printf("The length is %lu\n", strlen(enteredCommand)); 
 
   //  if user types in 'exit', break out of while loop
   // if user tries to exit &
@@ -52,7 +53,20 @@ void prompt(){
   }
 
   // Check for comment starting with #
-  
+  // remember that the # sign might not be at enteredCommand[0]
+  // example, user entered "   # this is stil a comment"
+  // therefore we use a loop to loop over all chars of enteredCommand
+  // if we detect a '#', use continue and do nothing since
+  // we detect that this line is a comment
+  char charVar = enteredCommand[0];
+  int i;
+  for(i = 0; i < strlen(enteredCommand) - 1; i++){
+   charVar = enteredCommand[i];
+   if(charVar == '#'){
+    printf("comment detected\n"); // delete this line later
+    continue;
+   }
+  } 
 
 
   // check if user entered a blank line. If so, shell should
