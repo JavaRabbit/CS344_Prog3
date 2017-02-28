@@ -36,11 +36,32 @@ void main(){
 void prompt(){
  bool runPrompt = true;
  while(runPrompt){
+
   printf(": ");
   char enteredCommand[MAX_LENGTH +1]; 
   fgets(enteredCommand, MAX_LENGTH, stdin);
   //printf("You entered: %s\n", enteredCommand); 
   //printf("The length is %lu\n", strlen(enteredCommand)); 
+
+  // initialize array to store tokenized string from enteredCommand
+  // NULL is appended to the end of the array
+  // size of this array is 512 arguments
+  char * words[513];    // update to explain why
+  if(enteredCommand != NULL){
+   int i = 0; // variable to tell where to put tokenized string
+   char *p = strtok(enteredCommand, " ");
+   while ( p != NULL){
+    // add string to words array and increment i
+    words[i++] = p;   
+    p = strtok(NULL, " ");
+   }
+   int j;
+   for(j = 0; j < i; j++){
+    printf("%s\n", words[j]);
+   }   
+  }
+
+  
 
   //  if user types in 'exit', break out of while loop
   // if user tries to exit &
@@ -71,11 +92,13 @@ void prompt(){
 
   // check if user entered a blank line. If so, shell should
   // do nothing. Use continue
+  // NEEDS TO BE FIXED, bug here
   char firstChar = enteredCommand[0];
   if('\n' == firstChar){
    continue;
   }
- 
+
+  // needs to be updated to take in arguments to path location 
   if(strcmp(enteredCommand, "cd") == 0){
    char cwd[1024];
    getcwd(cwd, sizeof(cwd));
@@ -85,6 +108,9 @@ void prompt(){
    getcwd(cwd, sizeof(cwd));
    printf("current dir:%s\n", cwd);
   }
+
+  // Now that built ins have been checked, 
+
  }  // end of while loop
 
 } // end of prompt() 
