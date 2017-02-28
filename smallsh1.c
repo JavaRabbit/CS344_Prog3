@@ -47,6 +47,10 @@ void prompt(){
   //printf("You entered: %s\n", enteredCommand); 
   //printf("The length is %lu\n", strlen(enteredCommand)); 
 
+  // fgets adds a new line to the entered text eg. exit\n\0
+  // get rid of this newline. change \n to \0
+  enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
+
   // initialize array to store tokenized string from enteredCommand
   // NULL is appended to the end of the array
   // size of this array is 512 arguments
@@ -62,14 +66,19 @@ void prompt(){
 
    // set words[i]  to NULL since we need to add NULL to the end
    // because execvp reads until NULL is found
+   // -1 because the \n is added to the array
+   // we want to replace the \n with NULL
    words[i] == NULL;
-
-   /*
+   
    int j;
-   for(j = 0; j < i; j++){
-    printf("%s\n", words[j]);
+   for(j = 0; j < i+1; j++){
+    if(words[j] == NULL){
+      printf("thisi is null\n");
+    } else {
+     printf("%s\n", words[j]);
+    }
    } 
-   */  
+     
   }
 
   
@@ -78,7 +87,7 @@ void prompt(){
   // if user tries to exit &
   //  fgets adds a newline to entered text eg.  exit\n\0
   //  To get rid of this newline change \n to \0
-  enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
+  // enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
   if(strcmp(enteredCommand, "exit") ==0){
    printf("exiting loop\n");
    break;
