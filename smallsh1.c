@@ -69,7 +69,8 @@ void prompt(){
    // -1 because the \n is added to the array
    // we want to replace the \n with NULL
    words[i] == NULL;
-   
+  
+   /* 
    int j;
    for(j = 0; j < i+1; j++){
     if(words[j] == NULL){
@@ -78,7 +79,7 @@ void prompt(){
      printf("%s\n", words[j]);
     }
    } 
-     
+   */  
   }
 
   
