@@ -35,6 +35,10 @@ void main(){
 
 void prompt(){
  bool runPrompt = true;
+
+ // variable to hold exit status. Used by built-in command status
+ int exitStatus = 0;   // initialize to 0
+
  while(runPrompt){
 
   printf(": ");
@@ -55,10 +59,17 @@ void prompt(){
     words[i++] = p;   
     p = strtok(NULL, " ");
    }
+
+   // set words[i]  to NULL since we need to add NULL to the end
+   // because execvp reads until NULL is found
+   words[i] == NULL;
+
+   /*
    int j;
    for(j = 0; j < i; j++){
     printf("%s\n", words[j]);
-   }   
+   } 
+   */  
   }
 
   
@@ -71,6 +82,12 @@ void prompt(){
   if(strcmp(enteredCommand, "exit") ==0){
    printf("exiting loop\n");
    break;
+  }
+
+  // if user types in "status", print out exit status
+  if(strcmp(enteredCommand, "status") == 0){
+   printf("%d\n", exitStatus);
+   continue;  // continue to reshow prompt
   }
 
   // Check for comment starting with #
@@ -109,7 +126,8 @@ void prompt(){
    printf("current dir:%s\n", cwd);
   }
 
-  // Now that built ins have been checked, 
+  // Now that built ins have been checked, use fork and exit
+  // to create processes 
 
  }  // end of while loop
 
