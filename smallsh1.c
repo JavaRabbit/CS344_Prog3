@@ -43,7 +43,16 @@ void prompt(){
  while(runPrompt){
 
   printf(": ");
+
+  // flush output stream
+  fflush(stdout);
+
+  // string to hold users input 
   char enteredCommand[MAX_LENGTH +1]; 
+  
+  // flush input stream  -  FIX ME!
+  //memset(enteredCommand, '\0', sizeof(enteredCommand)); 
+ 
   fgets(enteredCommand, MAX_LENGTH, stdin);
   //printf("You entered: %s\n", enteredCommand); 
   //printf("The length is %lu\n", strlen(enteredCommand)); 
@@ -67,7 +76,6 @@ void prompt(){
 
    // set words[i]  to NULL since we need to add NULL to the end
    // because execvp reads until NULL is found
-   // -1 because the \n is added to the array
    // we want to replace the \n with NULL
    words[i] == NULL;
   
@@ -81,7 +89,7 @@ void prompt(){
     }
    } 
    */  
-  }
+  }  // end if enteredCommand != NULL
 
   
 
@@ -96,7 +104,7 @@ void prompt(){
   }
 
   // if user types in "status", print out exit status
-  if(strcmp(enteredCommand, "status") == 0){
+  else if(strcmp(enteredCommand, "status") == 0){
    printf("exit value %d\n", exitStatus);
    continue;  // continue to reshow prompt
   }
@@ -107,6 +115,7 @@ void prompt(){
   // therefore we use a loop to loop over all chars of enteredCommand
   // if we detect a '#', use continue and do nothing since
   // we detect that this line is a comment
+  /*
   char charVar = enteredCommand[0];
   int i;
   for(i = 0; i < strlen(enteredCommand) - 1; i++){
@@ -116,18 +125,26 @@ void prompt(){
     continue;
    }
   } 
-
+  */
+  // TEMP CHECK for COMMENT
+  else if(enteredCommand[0] == '#'){
+   printf("comment detected\n");
+   continue;
+  }
+  
 
   // check if user entered a blank line. If so, shell should
   // do nothing. Use continue
   // NEEDS TO BE FIXED, bug here
+  /*
   char firstChar = enteredCommand[0];
   if('\n' == firstChar){
    continue;
   }
-
+  */
+ 
   // needs to be updated to take in arguments to path location 
-  if(strcmp(enteredCommand, "cd") == 0){
+  else if(strcmp(enteredCommand, "cd") == 0){
    char cwd[1024];
    getcwd(cwd, sizeof(cwd));
    printf("Current dir:%s\n", cwd);
@@ -139,16 +156,19 @@ void prompt(){
 
   // Now that built ins have been checked, use fork and exit
   // to create processes 
-  if(strcmp(enteredCommand, "pink") == 0){
+  else {
    pid_t spawnPid = -5;
    int childExitMethod = -5;
    
    spawnPid = fork();
    switch(spawnPid){
    case 0: {
-    char * args[3] = {"ls", "-a", NULL}; 
-    execvp(args[0], args);
-    // if command does not work, set built status to 1
+    //char * args[3] = {"ls", "-a", NULL}; 
+    //execvp(args[0], args);
+     
+    execvp(words[0], words);
+   
+    // if command does not work, set built-in status to 1
     exitStatus = 1;
     printf("exit status: %d\n", exitStatus);
    } // end case 0
