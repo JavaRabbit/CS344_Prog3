@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/timeb.h>
+#include <sys/wait.h>
 
 
 // declare constants
@@ -96,7 +97,7 @@ void prompt(){
 
   // if user types in "status", print out exit status
   if(strcmp(enteredCommand, "status") == 0){
-   printf("%d\n", exitStatus);
+   printf("exit value %d\n", exitStatus);
    continue;  // continue to reshow prompt
   }
 
@@ -138,6 +139,30 @@ void prompt(){
 
   // Now that built ins have been checked, use fork and exit
   // to create processes 
+  if(strcmp(enteredCommand, "pink") == 0){
+   pid_t spawnPid = -5;
+   int childExitMethod = -5;
+   
+   spawnPid = fork();
+   switch(spawnPid){
+   case 0: {
+    char * args[3] = {"ls", "-a", NULL}; 
+    execvp(args[0], args);
+    // if command does not work, set built status to 1
+    exitStatus = 1;
+    printf("exit status: %d\n", exitStatus);
+   } // end case 0
+   default: {
+    // 3 parameters are pid of process waiting for, pointer to int to be filled with
+    // exit status, then options
+    waitpid(spawnPid, &childExitMethod, 0);
+    printf("Child process terminated\n");
+   } // end default
+   }// end of switch
+  }  
+
+
+
 
  }  // end of while loop
 
