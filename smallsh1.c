@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <sys/timeb.h>
 #include <sys/wait.h>
-
+#include <signal.h>
 
 // declare constants
 // Spec: support command lines with a max length of 2048 characters
@@ -21,17 +21,18 @@ int pidNum;
 // prototypes
 void prompt();
 void killProcesses();
+void sig_handler(int signo);
 
 void main(){
 
   pidNum = getpid();
   printf("THe pid number is %d\n", pidNum);
+  
+  // register the handler. 
+  // If you get sigint signal, call this sig_handler function
+  // control+c is SIGINT
+  signal(SIGINT, sig_handler);
   prompt();
-  int i;
-  /*for(i = 0; i < 3; i++){
-   pid_t pid = fork();
-   printf("THe child process is:%d\n", pid);
-  } */
 }
 
 void prompt(){
@@ -136,12 +137,13 @@ void prompt(){
   // check if user entered a blank line. If so, shell should
   // do nothing. Use continue
   // NEEDS TO BE FIXED, bug here
-  /*
-  char firstChar = enteredCommand[0];
-  if('\n' == firstChar){
+  
+  //char firstChar = enteredCommand[0];
+  else if('\0' == enteredCommand[0]){
+   printf("blank line detected\n");
    continue;
   }
-  */
+  
  
   // needs to be updated to take in arguments to path location 
   else if(strcmp(enteredCommand, "cd") == 0){
@@ -196,3 +198,13 @@ void prompt(){
  */
 void killProcesses(){
 }
+
+/* Handler function to kill child process.
+ * It is the parent that will print out number of signal
+ * that killed the child process
+ */
+void sig_handler(int signo){
+ int m = getpid();  
+ printf("received SIGINT %d. Killed by signal %d\n",m,signo);
+}
+
