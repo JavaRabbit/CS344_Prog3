@@ -1,9 +1,10 @@
-Compilation is just
-gcc -o smallsh ...
-
-
-
-Credit for helping understand signals also goes to:
-https://www.youtube.com/watch?v=rggw61JtGz0&t=295s&index=34&list=WL
-
-
+forktest
+forktest.c
+p3testscript
+readme.txt
+smallsh
+smallsh1
+smallsh1.c
+smallsh2_testRedirection
+smallsh2_testRedirection.c
+smallsh.c

@@ -1,0 +1,13 @@
+total 64
+-rw-rw----. 1 kwongb upg1915   680 Mar  3 13:36 blue.txt
+-rwxrwx---. 1 kwongb upg1915  7104 Feb 17 20:42 forktest
+-rw-rw----. 1 kwongb upg1915   424 Feb 17 20:42 forktest.c
+-rwxr-x---. 1 kwongb upg1915  2160 Mar  2 12:57 p3testscript
+-rw-rw----. 1 kwongb upg1915   134 Mar  3 13:31 readme.txt
+-rw-rw----. 1 kwongb upg1915     0 Mar  3 13:46 redblah.txt
+-rwxrwx---. 1 kwongb upg1915  9742 Mar  2 13:03 smallsh
+-rwxrwx---. 1 kwongb upg1915  9793 Mar  1 23:58 smallsh1
+-rw-rw----. 1 kwongb upg1915  5268 Mar  1 23:58 smallsh1.c
+-rwxrwx---. 1 kwongb upg1915 10296 Mar  3 13:45 smallsh2_testRedirection
+-rw-rw----. 1 kwongb upg1915  7971 Mar  3 13:45 smallsh2_testRedirection.c
+-rw-rw----. 1 kwongb upg1915  5270 Mar  2 13:03 smallsh.c

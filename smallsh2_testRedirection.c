@@ -216,15 +216,16 @@ void prompt(){
       //
       int outVal; // an integer to hold value of returned value
 
-      // output file is specified at words[lt + 1] eg. index position 1 further than > 
+      // output file is specified at words[gt + 1] eg. index position 1 further than > 
       // check if file words[lt+1]  is an existing output file. If yes, append to this file
       // Per the spec: output file is truncated if it exists, or created if it does not exist
-      if(open(words[gt+1], O_RDONLY) == -1){
+      /* if(open(words[gt+1], O_RDONLY) == -1){
        printf("no such file\n");
       } 
-      else {
+      else { */
        printf("file found\n");
-       outVal = open(words[gt+1], O_WRONLY | O_TRUNC);
+      // either open and truncate, or create new file 
+      outVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
 
       // replace standard output with output file
       dup2(outVal, 1);
@@ -239,7 +240,7 @@ void prompt(){
       }
       tempArr[wordsPointer] = NULL;   // set the end of the command to null
       execvp(tempArr[0], tempArr); // run the command 
-     } // end else    
+     //} // end else    
     }  // end if lt < 0 && gt > 0 
 
    
