@@ -174,7 +174,7 @@ void prompt(){
     // 3 parameters are pid of process waiting for, pointer to int to be filled with
     // exit status, then options
     waitpid(spawnPid, &childExitMethod, 0);
-    printf("Child process terminated\n");
+    //printf("Child process terminated\n");
    } // end default
    }// end of switch
   }  

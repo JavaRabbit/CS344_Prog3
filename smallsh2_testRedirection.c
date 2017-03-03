@@ -9,6 +9,7 @@
 #include <sys/timeb.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <fcntl.h>
 
 // declare constants
 // Spec: support command lines with a max length of 2048 characters
@@ -22,6 +23,7 @@ int pidNum;
 void prompt();
 void killProcesses();
 void sig_handler(int signo);
+void runcmd(int fd);
 
 void main(){
 
@@ -160,17 +162,57 @@ void prompt(){
    
    spawnPid = fork();
    switch(spawnPid){
-   case 0: {  /* child */
-    //char * args[3] = {"ls", "-a", NULL}; 
+   // case 0 means the child will execute this code
+   case 0: { 
+    
+    // 3 cases. 1 no redirection. 2. only output redirection 3. input redirection
+    // 4 both input and output redirection
+
+    int i = 0;
+    int gt = -5;  // to hold index of" greater than" symbol, initialize to arbitrary
+    int lt = -5;  // in case we have a "less than" symbol. Initialize to some arbitrary
+    while(words[i] != NULL){
+     // locate and store the index of lt 
+     if(strcmp(words[i], "<") == 0){
+      lt = i;  // if < found, set lt to location of index where found
+      printf("< found at index %d\n", lt);
+     }
+     // locate and store the index of > if user entered >
+     if(strcmp(words[i], ">") ==0){
+       gt = i;
+       printf("> found at index %d\n", gt);
+     }
+     i++;
+    }
+
+    
+
+
+    //char * args[4] = {"ls", ">","foo.txt",  NULL}; 
     //execvp(args[0], args);
-     
-    execvp(words[0], words);
+    // if neither < or > was used, continue with execvp
+    if( gt < 0 && lt < 0){ 
+     execvp(words[0], words);
+    }
+    //   this catches if user entered something like  wc < someFile. Only "less than sign" was used
+    else if( lt > 0 && gt < 0){
+     // since < was used. Check that file at index lt+ 1 is a valid file
+     char *inputFile = NULL; // empty file pointer
+     // open the file the user requested.  Index of file is at lt + 1
+     // since file name is at the location after the "<"
+     if(open(words[lt +1], O_RDONLY) == -1){   // do a check that lt + 1 is valid
+      printf("%s: no such file or directory\n", words[lt+1]);
+     } else {
+      printf("openable\n");
+     }
+    }
+
    
     // if command does not work, set built-in status to 1
     exitStatus = 1;
-    printf("exit status: %d\n", exitStatus);
+    printf("Command did not work. exit status: %d\n", exitStatus);
    } // end case 0
-   default: {  /* parent */
+   default: {
     // 3 parameters are pid of process waiting for, pointer to int to be filled with
     // exit status, then options
     waitpid(spawnPid, &childExitMethod, 0);
