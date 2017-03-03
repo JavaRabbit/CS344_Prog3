@@ -168,45 +168,60 @@ void prompt(){
     // 3 cases. 1 no redirection. 2. only output redirection 3. input redirection
     // 4 both input and output redirection
 
-    int i = 0;
-    int gt = -5;  // to hold index of" greater than" symbol, initialize to arbitrary
-    int lt = -5;  // in case we have a "less than" symbol. Initialize to some arbitrary
-    while(words[i] != NULL){
-     // locate and store the index of lt 
-     if(strcmp(words[i], "<") == 0){
-      lt = i;  // if < found, set lt to location of index where found
-      printf("< found at index %d\n", lt);
-     }
-     // locate and store the index of > if user entered >
-     if(strcmp(words[i], ">") ==0){
-       gt = i;
-       printf("> found at index %d\n", gt);
-     }
-     i++;
-    }
+    // check for < and > using the words array
+    // initialize another array to hold the 'command array without > <"
 
+    char * noRedir[513];
+    int i = 0;
+    int noRedirPointer = 0;   // variable to hold location of noRedir array
+    int lt = -5; // variable to hold < location. Initialize to negative number
+    int gt = -5;  // variable to hold > location. INitialize to random neg number
+    while(words[i] != NULL){
+     
+     // if words[i] == ">", set location of gt
+     if(strcmp(words[i], ">") == 0){
+      gt = i; // set location of the > sign
+      i++;  // increment i but not noRedirPointer
+      continue;
+     } else if(strcmp(words[i], "<") ==0){
+      lt = i;
+      i++;
+      continue;
+     } else{
+      noRedir[noRedirPointer] = words[i];
+      i++; // increment i
+      noRedirPointer++; // increment this pointer since we added values to noRedir array
+     }
+
+    } // end of while loop
+
+    // append NULL to location end of the noRedirarray
+    noRedir[noRedirPointer] = NULL;
+    
+    /* 
+    int p = 0;
+    while( noRedir[p] != NULL){
+     printf("%s\n", noRedir[p]);
+     p++;
+    }
+    */
+
+    // CASE 1:  NO redirection. 
+    if(lt < 0 && gt <0 ){
+     execvp(words[0], words);
+
+    } 
     
 
 
-    //char * args[4] = {"ls", ">","foo.txt",  NULL}; 
-    //execvp(args[0], args);
-    // if neither < or > was used, continue with execvp
-    if( gt < 0 && lt < 0){ 
-     execvp(words[0], words);
-    }
-    //   this catches if user entered something like  wc < someFile. Only "less than sign" was used
-    else if( lt > 0 && gt < 0){
-     // since < was used. Check that file at index lt+ 1 is a valid file
-     char *inputFile = NULL; // empty file pointer
-     // open the file the user requested.  Index of file is at lt + 1
+    /*   
      // since file name is at the location after the "<"
      if(open(words[lt +1], O_RDONLY) == -1){   // do a check that lt + 1 is valid
       printf("%s: no such file or directory\n", words[lt+1]);
-     } else {
-      printf("openable\n");
-     }
-    }
-
+     } else {    file is valid and openable
+      int inputFile = open(words[lt+1], O_RDONLY); 
+      dup2(inputFile, 0);  // replace standard input with inputFile 
+     */
    
     // if command does not work, set built-in status to 1
     exitStatus = 1;
