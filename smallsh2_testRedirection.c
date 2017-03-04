@@ -23,6 +23,7 @@ int pidNum;
 void prompt();
 void killProcesses();
 void sig_handler(int signo);
+void checkCompletedChildren();
 void runcmd(int fd);
 
 void main(){
@@ -44,11 +45,14 @@ void prompt(){
  int exitStatus = 0;   // initialize to 0
 
  while(runPrompt){
-
+  
+  // before printing prompt, each time, check if any children have exited
+  checkCompletedChildren();
   printf(": ");
 
   // flush output stream
   fflush(stdout);
+  fflush(stdin);  
 
   // string to hold users input 
   char enteredCommand[MAX_LENGTH +1]; 
@@ -208,8 +212,9 @@ void prompt(){
 
     // CASE 1:  NO redirection. User did not use ">" or "<" 
     if(lt < 0 && gt <0 ){
-     execvp(words[0], words);  // just run the command
-
+     exitStatus = execvp(words[0], words);  // just run the command
+     printf("%s: no such file or directory\n", words[0]);   // get here only if execvp did not complete successfully
+     exitStatus = 1;   // set exit status to 1 as per spec
     } 
     if( lt < 0 && gt > 0){   // temp set to if, reset to else if
       // CASE 2: User only used " >"
@@ -246,10 +251,16 @@ void prompt(){
       // if input file is not found, send error message to user
       if(inputVal < 0){
        printf("cannot open %s for input\n", words[lt+1]);
+       fflush(stdout);
+       exitStatus = 1; // set exit status to 1 since invalid file user is trying to open
+       continue;   // to break out of this loop and reshow : prompt to user		     
       }
 
       // input file is found, replace standard input with input file
       dup2(inputVal, 0);
+
+      close(inputVal); // close file descriptor
+
       // make a copy of the command up until the "<"
       char * tempArr[513];
       int wordsPointer = 0;
@@ -257,22 +268,21 @@ void prompt(){
       for(wordsPointer = 0; wordsPointer < lt; wordsPointer++){
        tempArr[wordsPointer] = words[wordsPointer];
       }
-      tempArr[wordsPointer] == NULL; // set the end of the command to NULL
+      tempArr[wordsPointer] == NULL; // set the end of the truncated command to NULL
  
       // now execute the command
-      execvp(tempArr[0], tempArr);     
- 
+      exitStatus = execvp(tempArr[0], tempArr);     
+      exitStatus = 1; // set to 1 if execvp did not go sucessfully
      }   // end if lt > 0 && gt < 0
    
     // if command does not work, set built-in status to 1
-    exitStatus = 1;
-    printf("Command did not work. exit status: %d\n", exitStatus);
+    //exitStatus = 1;
+    //printf("Command did not work. exit status: %d\n", exitStatus);
    } // end case 0
    default: {
     // 3 parameters are pid of process waiting for, pointer to int to be filled with
     // exit status, then options
     waitpid(spawnPid, &childExitMethod, 0);
-    //printf("Child process terminated\n");
    } // end default
    }// end of switch
   }  
@@ -293,6 +303,21 @@ void prompt(){
 void killProcesses(){
 }
 
+// method to continually check if child processes have completed
+void checkCompletedChildren(){
+ int exitedChildMethod = -5; // set to bogus value
+ int childPid = waitpid(-1, &exitedChildMethod, WNOHANG);
+ 
+ // if childPid == 0, no processes have terminated, just return
+ if(childPid ==0 ){
+  return;
+ }
+
+ // a background child process has terminated. Print to user
+ //
+ //
+}
+
 /* Handler function to kill child process.
  * It is the parent that will print out number of signal
  * that killed the child process
@@ -300,5 +325,6 @@ void killProcesses(){
 void sig_handler(int signo){
  int m = getpid();  
  printf("received SIGINT %d. Killed by signal %d\n",m,signo);
+ fflush(stdout);
 }
 
