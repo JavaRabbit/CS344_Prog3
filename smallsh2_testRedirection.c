@@ -213,17 +213,12 @@ void prompt(){
     } 
     if( lt < 0 && gt > 0){   // temp set to if, reset to else if
       // CASE 2: User only used " >"
-      //
       int outVal; // an integer to hold value of returned value
 
       // output file is specified at words[gt + 1] eg. index position 1 further than > 
       // check if file words[lt+1]  is an existing output file. If yes, append to this file
       // Per the spec: output file is truncated if it exists, or created if it does not exist
-      /* if(open(words[gt+1], O_RDONLY) == -1){
-       printf("no such file\n");
-      } 
-      else { */
-       printf("file found\n");
+      // printf("file found\n");
       // either open and truncate, or create new file 
       outVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
 
@@ -239,10 +234,16 @@ void prompt(){
        tempArr[wordsPointer] = words[wordsPointer];  // copy into tempArr the first part of the command
       }
       tempArr[wordsPointer] = NULL;   // set the end of the command to null
-      execvp(tempArr[0], tempArr); // run the command 
-     //} // end else    
-    }  // end if lt < 0 && gt > 0 
+      int k = execvp(tempArr[0], tempArr); // run the command
+     }  // end if lt < 0 && gt > 0 
+     
+     // if user used "<" but not ">"
+     if(lt > 0 && gt < 0){   /* eg.  wc < somefile.txt   */ 
+      // if input file is not found ...
 
+      // input file is found
+ 
+     }   // end if lt > 0 && gt < 0
    
     // if command does not work, set built-in status to 1
     exitStatus = 1;
