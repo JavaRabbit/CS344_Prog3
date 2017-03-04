@@ -23,31 +23,32 @@ int pidNum;
 void prompt();
 void killProcesses();
 void sig_handler(int signo);
+void sig_handler2(int signo);
 void checkCompletedChildren();
-void runcmd(int fd);
 
 void main(){
 
-  //pidNum = getpid();
-  //printf("THe pid number is %d\n", pidNum);
+  pidNum = getpid();
+  printf("THe pid number is %d\n", pidNum);
   
   // register the handler. 
   // If you get sigint signal, call this sig_handler function
   // control+c is SIGINT
   signal(SIGINT, sig_handler);
+  signal(SIGTSTP, sig_handler2); // for control + z
   prompt();
 }
 
 void prompt(){
  bool runPrompt = true;
-
- bool isBGprocess = false; // variable to hold is user wanted background & process
  
  // variable to hold exit status. Used by built-in command status
  int exitStatus = 0;   // initialize to 0
 
  while(runPrompt){
   
+  bool isBGprocess = false; // variable to hold if user wanted background process
+
   // before printing prompt, each time, check if any children have exited
   checkCompletedChildren();
   printf(": ");
@@ -61,7 +62,8 @@ void prompt(){
   
   // get user input string 
   fgets(enteredCommand, MAX_LENGTH, stdin);
-
+  //printf("%s\n", enteredCommand);
+  fflush(stdout);
   // fgets adds a new line to the entered text eg. exit\n\0
   // get rid of this newline. change \n to \0
   enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
@@ -79,14 +81,24 @@ void prompt(){
     p = strtok(NULL, " ");
    }
 
+   // Use a loop to iterate over words[] array to check for "&".
+   // If "&" is found, set isBGprocess boolean to true
+   int bg_iterator = 0;
+   while(words[bg_iterator] != NULL){
+     if(strcmp(words[bg_iterator], "&") == 0){
+       isBGprocess = true; // set boolean to true. 
+       words[bg_iterator] = NULL;  // replace & with NULL, since we found the end of the command
+       printf("found & at index %d\n", bg_iterator); fflush(stdout);
+     }
+     bg_iterator++;
+   }
+   
+
+
    // set words[i]  to NULL since we need to add NULL to the end
    // because execvp reads until NULL is found
-   words[i] == NULL;
+   words[i] = NULL;
   
-   /* Check if user entered & for a background process
-   if(strcmp(words[i-1], "&") == 0){
-    isBGprocess = true;
-   }    */
    
    /* 
    int j;
@@ -115,6 +127,7 @@ void prompt(){
   // if user types in "status", print out exit status
   else if(strcmp(enteredCommand, "status") == 0){
    printf("exit value %d\n", exitStatus);
+   fflush(stdout);
    continue;  // continue to reshow prompt
   }
 
@@ -203,7 +216,7 @@ void prompt(){
      printf("%s: no such file or directory\n", words[0]);   // get here only if execvp did not complete successfully
      exitStatus = 1;   // set exit status to 1 as per spec
     } 
-    if( lt < 0 && gt > 0){   // temp set to if, reset to else if
+    else if( lt < 0 && gt > 0){   // temp set to if, reset to else if
       // CASE 2: User only used " >"
       int outVal; // an integer to hold value of returned value
 
@@ -230,7 +243,7 @@ void prompt(){
      }  // end if lt < 0 && gt > 0 
      
      // CASE 3:  if user used "<" but not ">"
-     if(lt > 0 && gt < 0){   /* eg.  wc < somefile.txt   */
+     else if(lt > 0 && gt < 0){   /* eg.  wc < somefile.txt   */
       // set file descriptor for input file
       int inputVal;
       // try and read the input file located at words[lt + 1]
@@ -273,10 +286,10 @@ void prompt(){
    
     if(isBGprocess == false){
      waitpid(spawnPid, &childExitMethod, 0);   // use 0 as options. 
-    } else {
-       waitpid(spawnPid, &childExitMethod, WNOHANG);
-       printf("BF process selected \n");
-    }
+    } //else {
+       //waitpid(spawnPid, &childExitMethod, WNOHANG); // use WNOHANG, don't wait for child
+       //printf("BF process selected \n");
+    // }
    } // end default
    }// end of switch
   }  
@@ -321,6 +334,11 @@ void checkCompletedChildren(){
 void sig_handler(int signo){
  int m = getpid();  
  printf("received SIGINT %d. Killed by signal %d\n",m,signo);
+ fflush(stdout);
+}
+
+void sig_handler2(int signo){
+ printf("you pressed control z\n");
  fflush(stdout);
 }
 

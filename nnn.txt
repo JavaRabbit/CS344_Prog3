@@ -1,0 +1,13 @@
+cup.txt
+foobar
+forktest
+forktest.c
+nnn.txt
+p3testscript
+readme.txt
+smallsh
+smallsh1
+smallsh1.c
+smallsh2_testRedirection
+smallsh2_testRedirection.c
+smallsh.c
