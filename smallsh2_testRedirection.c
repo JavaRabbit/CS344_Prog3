@@ -28,8 +28,8 @@ void runcmd(int fd);
 
 void main(){
 
-  pidNum = getpid();
-  printf("THe pid number is %d\n", pidNum);
+  //pidNum = getpid();
+  //printf("THe pid number is %d\n", pidNum);
   
   // register the handler. 
   // If you get sigint signal, call this sig_handler function
@@ -41,6 +41,8 @@ void main(){
 void prompt(){
  bool runPrompt = true;
 
+ bool isBGprocess = false; // variable to hold is user wanted background & process
+ 
  // variable to hold exit status. Used by built-in command status
  int exitStatus = 0;   // initialize to 0
 
@@ -57,12 +59,8 @@ void prompt(){
   // string to hold users input 
   char enteredCommand[MAX_LENGTH +1]; 
   
-  // flush input stream  -  FIX ME!
-  //memset(enteredCommand, '\0', sizeof(enteredCommand)); 
- 
+  // get user input string 
   fgets(enteredCommand, MAX_LENGTH, stdin);
-  //printf("You entered: %s\n", enteredCommand); 
-  //printf("The length is %lu\n", strlen(enteredCommand)); 
 
   // fgets adds a new line to the entered text eg. exit\n\0
   // get rid of this newline. change \n to \0
@@ -85,6 +83,11 @@ void prompt(){
    // because execvp reads until NULL is found
    words[i] == NULL;
   
+   /* Check if user entered & for a background process
+   if(strcmp(words[i-1], "&") == 0){
+    isBGprocess = true;
+   }    */
+   
    /* 
    int j;
    for(j = 0; j < i+1; j++){
@@ -104,8 +107,8 @@ void prompt(){
   //  fgets adds a newline to entered text eg.  exit\n\0
   //  To get rid of this newline change \n to \0
   // enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
-  if(strcmp(enteredCommand, "exit") ==0){
-   //printf("exiting loop\n");
+  if(strcmp(enteredCommand, "exit") == 0){
+   //printf("exiting loop\n"); WRITE METHOD TO KILL CHILDREN
    break;
   }
 
@@ -115,23 +118,7 @@ void prompt(){
    continue;  // continue to reshow prompt
   }
 
-  // Check for comment starting with #
-  // remember that the # sign might not be at enteredCommand[0]
-  // example, user entered "   # this is stil a comment"
-  // therefore we use a loop to loop over all chars of enteredCommand
-  // if we detect a '#', use continue and do nothing since
-  // we detect that this line is a comment
-  /*
-  char charVar = enteredCommand[0];
-  int i;
-  for(i = 0; i < strlen(enteredCommand) - 1; i++){
-   charVar = enteredCommand[i];
-   if(charVar == '#'){
-    printf("comment detected\n"); // delete this line later
-    continue;
-   }
-  } 
-  */
+   
   // TEMP CHECK for COMMENT
   else if(enteredCommand[0] == '#'){
    //printf("comment detected\n");
@@ -282,7 +269,14 @@ void prompt(){
    default: {
     // 3 parameters are pid of process waiting for, pointer to int to be filled with
     // exit status, then options
-    waitpid(spawnPid, &childExitMethod, 0);
+    // if  "is background" use WNOHANG,  else for foreground use, 0 for option
+   
+    if(isBGprocess == false){
+     waitpid(spawnPid, &childExitMethod, 0);   // use 0 as options. 
+    } else {
+       waitpid(spawnPid, &childExitMethod, WNOHANG);
+       printf("BF process selected \n");
+    }
    } // end default
    }// end of switch
   }  
@@ -314,9 +308,11 @@ void checkCompletedChildren(){
  }
 
  // a background child process has terminated. Print to user
- //
- //
-}
+ if (WIFEXITED(exitedChildMethod) != 0){  // != means exited normally
+  printf("background pid %d is done: exit value %d\n", childPid , WEXITSTATUS(exitedChildMethod) );
+ }
+ 
+} // end of void checkCompletedChildren
 
 /* Handler function to kill child process.
  * It is the parent that will print out number of signal
