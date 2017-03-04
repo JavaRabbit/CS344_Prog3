@@ -237,11 +237,30 @@ void prompt(){
       int k = execvp(tempArr[0], tempArr); // run the command
      }  // end if lt < 0 && gt > 0 
      
-     // if user used "<" but not ">"
-     if(lt > 0 && gt < 0){   /* eg.  wc < somefile.txt   */ 
-      // if input file is not found ...
+     // CASE 3:  if user used "<" but not ">"
+     if(lt > 0 && gt < 0){   /* eg.  wc < somefile.txt   */
+      // set file descriptor for input file
+      int inputVal;
+      // try and read the input file located at words[lt + 1]
+      inputVal = open(words[lt +1], O_RDONLY);
+      // if input file is not found, send error message to user
+      if(inputVal < 0){
+       printf("cannot open %s for input\n", words[lt+1]);
+      }
 
-      // input file is found
+      // input file is found, replace standard input with input file
+      dup2(inputVal, 0);
+      // make a copy of the command up until the "<"
+      char * tempArr[513];
+      int wordsPointer = 0;
+      // use a for loop to copy the command up until the "<"  eg.  wc < someFile.txt
+      for(wordsPointer = 0; wordsPointer < lt; wordsPointer++){
+       tempArr[wordsPointer] = words[wordsPointer];
+      }
+      tempArr[wordsPointer] == NULL; // set the end of the command to NULL
+ 
+      // now execute the command
+      execvp(tempArr[0], tempArr);     
  
      }   // end if lt > 0 && gt < 0
    
@@ -253,7 +272,7 @@ void prompt(){
     // 3 parameters are pid of process waiting for, pointer to int to be filled with
     // exit status, then options
     waitpid(spawnPid, &childExitMethod, 0);
-    printf("Child process terminated\n");
+    //printf("Child process terminated\n");
    } // end default
    }// end of switch
   }  
