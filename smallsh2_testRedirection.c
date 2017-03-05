@@ -34,7 +34,7 @@ void checkCompletedChildren();
 void main(){
 
   pidNum = getpid();
-  printf("THe pid number is %d\n", pidNum);
+  //printf("THe pid number is %d\n", pidNum);
   
   // register the handler. 
   // If you get sigint signal, call this sig_handler function
@@ -103,10 +103,11 @@ void prompt(){
        }
      }
  
+     /*   PROBLEMATIC CODE    
      // Also compare each element of word[] to see if it contains "$$"
-     char *n = NULL;
-     char * pp = "$$";
-     n = strstr(words[bg_iterator], pp);
+     char *n;
+     //char * pp = "$$";
+     n = strstr(words[bg_iterator], "$$");
      if(n != NULL){
 
       // function to convert integer value to string
@@ -124,15 +125,17 @@ void prompt(){
       // integer to hold length of  command without the $$.  example foo$$ is len 5. but we 
       // want to start to copy pidNumString at location 3.  thus we need to chop off the last 2 chars(the $$)
       int locStart = strlen(newString) - 2;
-      memcpy(newString + locStart, pidNumString, 7); //  - 2 because we want to cut off the $$ (2 chars)
+      memcpy(newString + locStart, pidNumString, 5); //  - 2 because we want to cut off the $$ (2 chars)
       //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
 
       //fflush(stdout);
 
       //  now that newString contains our variable expansion, replace words[bg_iterator] with newString;
-      words[bg_iterator] = newString;  
-     } 
+     // words[bg_iterator] = newString;
+     strcpy(words[bg_iterator], newString);  
+     }  // end if n != NULL 
      
+     */     
  
      bg_iterator++;
    }
@@ -329,7 +332,54 @@ void prompt(){
       exitStatus = execvp(tempArr[0], tempArr);     
       exitStatus = 1; // set to 1 if execvp did not go sucessfully
      }   // end if lt > 0 && gt < 0
+  
+     // CASE 4: user uses both < and >
+     else if( lt > 0 && gt > 0){
+       //printf(" used both\n");
+       // set both file descriptors
+       int inputVal;
+       int outputVal;
+ 
+       inputVal = open(words[lt+1], O_RDONLY); // open the input file, the one specified after the "<" less than
    
+       // check if file is found, else send message to user and reshow : prompt
+       if(inputVal < 0){
+        printf("cannot open %s for input\n", words[lt+1]);
+        fflush(stdout);
+        exitStatus = 1;
+        continue;
+       }   // end if inputVal < 0
+
+       outputVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
+      
+       // replace standard input with input file
+       dup2(inputVal, 0);
+
+      // replace standard output with output file
+      dup2(outputVal, 1);
+
+      // close file descriptors
+      close(inputVal);
+      close(outputVal);
+
+      // now copy the command which is "some cmd < someInput > someOutputFile"
+      // meaning we want to get the strings before the "<"
+      char *tempArr[513]; 
+      int wordsPointer = 0;
+      
+      // use for loop to copy command up to the "<"
+      for(wordsPointer = 0; wordsPointer < lt; wordsPointer++){
+        tempArr[wordsPointer] = words[wordsPointer];
+      }
+   
+      tempArr[wordsPointer] = NULL; // set end of command to NULL
+       
+      // execute the command
+      exitStatus = execvp(tempArr[0], tempArr);
+  
+     } // end CASE 4, user used both < and >
+
+ 
     // if command does not work, set built-in status to 1
     //exitStatus = 1;
     //printf("Command did not work. exit status: %d\n", exitStatus);

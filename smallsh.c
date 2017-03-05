@@ -34,7 +34,7 @@ void checkCompletedChildren();
 void main(){
 
   pidNum = getpid();
-  printf("THe pid number is %d\n", pidNum);
+  //printf("THe pid number is %d\n", pidNum);
   
   // register the handler. 
   // If you get sigint signal, call this sig_handler function
@@ -103,27 +103,49 @@ void prompt(){
        }
      }
  
+     /*       
      // Also compare each element of word[] to see if it contains "$$"
-     /*    char *n = NULL;
+     char *n;
+     //char * pp = "$$";
      n = strstr(words[bg_iterator], "$$");
      if(n != NULL){
-      printf("substring found\n");
-     }
-     fflush(stdout);  
-     fflush(stdin);
+
+      // function to convert integer value to string
+      char pidNumString[10];
+      sprintf(pidNumString, "%d", pidNum);
+      //  the length of the pid is usually 5.  it does not count terminator 
+      //printf("The strin gis %s\n and len is %lu", pidNumString, strlen(pidNumString));
+      //
+      // Now append this pidNumString to $$
+      char newString[20]; // allocate too much space
+      strcpy(newString, words[bg_iterator]);  // copy the string into newString
+      //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
+      
+      // try to memcpy the pidNumString to newString at location 
+      // integer to hold length of  command without the $$.  example foo$$ is len 5. but we 
+      // want to start to copy pidNumString at location 3.  thus we need to chop off the last 2 chars(the $$)
+      int locStart = strlen(newString) - 2;
+      memcpy(newString + locStart, pidNumString, 5); //  - 2 because we want to cut off the $$ (2 chars)
+      //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
+
+      //fflush(stdout);
+
+      //  now that newString contains our variable expansion, replace words[bg_iterator] with newString;
+     // words[bg_iterator] = newString;
+     strcpy(words[bg_iterator], newString);  
+     }  // end if n != NULL 
+     
      */
  
      bg_iterator++;
    }
    
 
-
    // set words[i]  to NULL since we need to add NULL to the end
    // because execvp reads until NULL is found
    words[i] = NULL;
   
-   
-   /* 
+  /* 
    int j;
    for(j = 0; j < i+1; j++){
     if(words[j] == NULL){
@@ -131,8 +153,9 @@ void prompt(){
     } else {
      printf("%s\n", words[j]);
     }
-   } 
-   */  
+   }
+   */ 
+     
   }  // end if enteredCommand != NULL
 
   
