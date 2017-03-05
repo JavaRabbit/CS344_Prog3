@@ -104,14 +104,38 @@ void prompt(){
      }
  
      // Also compare each element of word[] to see if it contains "$$"
-     /*    char *n = NULL;
-     n = strstr(words[bg_iterator], "$$");
+        char *n = NULL;
+     char * pp = "$$";
+     n = strstr(words[bg_iterator], pp);
      if(n != NULL){
-      printf("substring found\n");
-     }
-     fflush(stdout);  
-     fflush(stdin);
-     */
+      //printf("substring found\n");
+      //fflush(stdout);
+      // find the lengt of words[bg_iterator]
+      int m = strlen(words[bg_iterator]);
+      printf("%d\n", pidNum);
+
+      // function to convert integer value to string
+      char pidNumString[10];
+      sprintf(pidNumString, "%d", pidNum);
+      //  the length of the pid is usually 5.  it does not count terminator 
+      //printf("The strin gis %s\n and len is %lu", pidNumString, strlen(pidNumString));
+      //
+      // Now append this pidNumString to $$
+      char newString[20]; // allocate too much space
+      strcpy(newString, words[bg_iterator]);
+      //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
+      
+      // try to memcpy the pidNumString to newString at location *n
+      // integer to hold length of  command without the $$.  example foo$$ is len 5. but we 
+      // want to start to copy pidNumString at location 3.
+      int locStart = strlen(newString) - 2;
+      memcpy(newString + locStart, pidNumString, 7); //  - 2 because we want to cut off the $$ (2 chars)
+      printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
+
+      fflush(stdout);  
+     } 
+     
+     //printf("strlen %lu\n", strlen(words[bg_iterator]));
  
      bg_iterator++;
    }
