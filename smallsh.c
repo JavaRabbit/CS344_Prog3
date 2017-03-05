@@ -33,7 +33,7 @@ void checkCompletedChildren();
 
 void main(){
 
-  pidNum = getpid();
+  pidNum = (int) getpid();
   //printf("THe pid number is %d\n", pidNum);
   
   // register the handler. 
@@ -118,12 +118,16 @@ void prompt(){
 
       // function to convert integer value to string
       char pidNumString[10];
+      //int pidNum2 = (int)getpid(); 
+      //printf("The pid num2 is %d\n", pidNum2);
+      printf("the pid num is %d\n", pidNum); 
+      
       sprintf(pidNumString, "%d", pidNum);
       //  the length of the pid is usually 5.  it does not count terminator 
-      //printf("The strin gis %s\n and len is %lu", pidNumString, strlen(pidNumString));
+      //printf("The string is %s\n and len is %lu", pidNumString, strlen(pidNumString));
       
       // Now append this pidNumString to $$
-      char newString[20]; // allocate too much space
+      char newString[20] = ""; // allocate too much space
       strcpy(newString, words[bg]);  // copy the string into newString
       //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
      
@@ -141,7 +145,7 @@ void prompt(){
       //  now that newString contains our variable expansion, replace words[bg_iterator] with newString;
      // words[bg_iterator] = newString;
      strcpy(words[bg], newString);  
-
+     //strcpy(newString, '\0'); // free the newString so it doesn't cause bugs
      }  // end if n != NULL 
 
 
@@ -175,6 +179,7 @@ void prompt(){
   // enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
   if(strcmp(enteredCommand, "exit") == 0){
    //printf("exiting loop\n"); WRITE METHOD TO KILL CHILDREN
+   killProcesses();
    break;
   }
 
@@ -186,17 +191,16 @@ void prompt(){
   }
 
    
-  // TEMP CHECK for COMMENT
+  // Comments are ignored. Comments also update status to 0
   else if(enteredCommand[0] == '#'){
-   //printf("comment detected\n");
+   exitStatus = 0; // update exit status
    continue;
   }
   
 
   // check if user entered a blank line. If so, shell should
-  // do nothing. Use continue
+  // do nothing. Use continue. Blank lines do not change exitStatus
   else if('\0' == enteredCommand[0]){
-   //printf("blank line detected\n");
    continue;
   }
   
@@ -216,10 +220,15 @@ void prompt(){
     chdirSuccess = chdir(words[1]);
    }
 
+   if(chdirSuccess == 0){
+     exitStatus = 0; // set exit status to 0 for successful dir change
+   }
+
    // else if path is invalid, print error to user
    if(chdirSuccess != 0){
     printf("cd: %s: No such file or directory\n", words[1]);
     fflush(stdout);
+    exitStatus = 1; // set exit status to 1 since unable to change dir
    }
 
   }
@@ -283,15 +292,15 @@ void prompt(){
      exitStatus = 1;   // set exit status to 1 as per spec
     } 
     else if( lt < 0 && gt > 0){   // temp set to if, reset to else if
-      // CASE 2: User only used " >"
+      // CASE 2: User only used " >"   eg.   ls > somefile.txt
       int outVal; // an integer to hold value of returned value
 
       // output file is specified at words[gt + 1] eg. index position 1 further than > 
       // check if file words[lt+1]  is an existing output file. If yes, append to this file
       // Per the spec: output file is truncated if it exists, or created if it does not exist
-      // printf("file found\n");
-      // either open and truncate, or create new file 
-      outVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
+      // either open and truncate, or create new file
+
+      outVal = open(words[gt+1], O_WRONLY | O_APPEND | O_CREAT, 0664);   
 
       // replace standard output with output file
       dup2(outVal, 1);
@@ -312,6 +321,20 @@ void prompt(){
      else if(lt > 0 && gt < 0){   /* eg.  wc < somefile.txt   */
       // set file descriptor for input file
       int inputVal;
+ 
+      // test if words[lt+1] is null, user di not specify file or input.  
+      // redirect to "/dev/null"
+      if(words[lt+1] == NULL){
+        //printf("No input file found\n");
+        //fflush(stdout);
+        //exitStatus = 1;
+        //continue;
+        
+        // change as per spec. if User did not specifiy input use "/dev/null"
+        strcpy(words[lt+1], "/dev/null"); 
+        
+      }
+ 
       // try and read the input file located at words[lt + 1]
       inputVal = open(words[lt +1], O_RDONLY);
       // if input file is not found, send error message to user
@@ -337,8 +360,9 @@ void prompt(){
       tempArr[wordsPointer] == NULL; // set the end of the truncated command to NULL
  
       // now execute the command
-      exitStatus = execvp(tempArr[0], tempArr);     
+      execvp(tempArr[0], tempArr);     
       exitStatus = 1; // set to 1 if execvp did not go sucessfully
+      continue; // to go to top of while loop
      }   // end if lt > 0 && gt < 0
   
      // CASE 4: user uses both < and >
@@ -358,7 +382,7 @@ void prompt(){
         continue;
        }   // end if inputVal < 0
 
-       outputVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
+       outputVal = open(words[gt+1], O_WRONLY | O_APPEND | O_CREAT, 0664);
       
        // replace standard input with input file
        dup2(inputVal, 0);
@@ -407,10 +431,7 @@ void prompt(){
    
     if(isBGprocess == false){
      waitpid(spawnPid, &childExitMethod, 0);   // use 0 as options. 
-    } //else {
-       //waitpid(spawnPid, &childExitMethod, WNOHANG); // use WNOHANG, don't wait for child
-       //printf("BF process selected \n");
-    // }
+    } 
    } // end default
    }// end of switch
   }  
@@ -429,6 +450,9 @@ void prompt(){
  * Purpose of this method: to kill all child jobs and processes
  */
 void killProcesses(){
+ printf("kill Processes called %d\n", pidNum);
+ exit(0);
+
 }
 
 // method to continually check if child processes have completed
