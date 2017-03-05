@@ -104,15 +104,10 @@ void prompt(){
      }
  
      // Also compare each element of word[] to see if it contains "$$"
-        char *n = NULL;
+     char *n = NULL;
      char * pp = "$$";
      n = strstr(words[bg_iterator], pp);
      if(n != NULL){
-      //printf("substring found\n");
-      //fflush(stdout);
-      // find the lengt of words[bg_iterator]
-      int m = strlen(words[bg_iterator]);
-      printf("%d\n", pidNum);
 
       // function to convert integer value to string
       char pidNumString[10];
@@ -122,32 +117,32 @@ void prompt(){
       //
       // Now append this pidNumString to $$
       char newString[20]; // allocate too much space
-      strcpy(newString, words[bg_iterator]);
+      strcpy(newString, words[bg_iterator]);  // copy the string into newString
       //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
       
-      // try to memcpy the pidNumString to newString at location *n
+      // try to memcpy the pidNumString to newString at location 
       // integer to hold length of  command without the $$.  example foo$$ is len 5. but we 
-      // want to start to copy pidNumString at location 3.
+      // want to start to copy pidNumString at location 3.  thus we need to chop off the last 2 chars(the $$)
       int locStart = strlen(newString) - 2;
       memcpy(newString + locStart, pidNumString, 7); //  - 2 because we want to cut off the $$ (2 chars)
-      printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
+      //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
 
-      fflush(stdout);  
+      //fflush(stdout);
+
+      //  now that newString contains our variable expansion, replace words[bg_iterator] with newString;
+      words[bg_iterator] = newString;  
      } 
      
-     //printf("strlen %lu\n", strlen(words[bg_iterator]));
  
      bg_iterator++;
    }
    
 
-
    // set words[i]  to NULL since we need to add NULL to the end
    // because execvp reads until NULL is found
    words[i] = NULL;
   
-   
-   /* 
+  /* 
    int j;
    for(j = 0; j < i+1; j++){
     if(words[j] == NULL){
@@ -155,8 +150,9 @@ void prompt(){
     } else {
      printf("%s\n", words[j]);
     }
-   } 
-   */  
+   }
+   */ 
+     
   }  // end if enteredCommand != NULL
 
   
