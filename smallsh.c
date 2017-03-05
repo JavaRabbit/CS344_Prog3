@@ -120,7 +120,7 @@ void prompt(){
       char pidNumString[10];
       //int pidNum2 = (int)getpid(); 
       //printf("The pid num2 is %d\n", pidNum2);
-      printf("the pid num is %d\n", pidNum); 
+      //printf("the pid num is %d\n", pidNum); 
       
       sprintf(pidNumString, "%d", pidNum);
       //  the length of the pid is usually 5.  it does not count terminator 

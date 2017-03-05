@@ -21,7 +21,11 @@ int pidNum;
 
 // boolean variable for SIGTSTP signal. For Ctrl+Z, the boolean changes each time user
 // enters Ctrl+Z.   Initialize to false since we allow users to do bg processes in the beginning
-bool noBGallowed = false;  
+bool noBGallowed = false;
+
+
+// boolean to hold whether last FOREGROUND process was killed by a signal
+bool wasLastFGKilledBySignal = false;  
 
 
 // prototypes
@@ -120,7 +124,7 @@ void prompt(){
       char pidNumString[10];
       //int pidNum2 = (int)getpid(); 
       //printf("The pid num2 is %d\n", pidNum2);
-      printf("the pid num is %d\n", pidNum); 
+      //printf("the pid num is %d\n", pidNum); 
       
       sprintf(pidNumString, "%d", pidNum);
       //  the length of the pid is usually 5.  it does not count terminator 
@@ -185,8 +189,17 @@ void prompt(){
 
   // if user types in "status", print out exit status
   else if(strcmp(enteredCommand, "status") == 0){
-   printf("exit value %d\n", exitStatus);
+   // check if the last FG process was killed by signal or not
+   if(wasLastFGKilledBySignal == false){
+    printf("exit value %d\n", exitStatus);
+   } else {  /* yes, terminated by singal */
+    printf("terminated by signal someNum\n");
+   }
+
+   wasLastFGKilledBySignal = false;  // set to false since "status" cmd is not killed by signal
+ 
    fflush(stdout);
+
    continue;  // continue to reshow prompt
   }
 
@@ -194,6 +207,7 @@ void prompt(){
   // Comments are ignored. Comments also update status to 0
   else if(enteredCommand[0] == '#'){
    exitStatus = 0; // update exit status
+   wasLastFGKilledBySignal = false; // set to false since #commands are not fg killed by signals
    continue;
   }
   
@@ -231,6 +245,8 @@ void prompt(){
     exitStatus = 1; // set exit status to 1 since unable to change dir
    }
 
+  // set boolean to false since cd commands are fg commands not killed by sigals
+   wasLastFGKilledBySignal = false;
   }
 
   // Now that built ins have been checked, use fork and exit
@@ -424,6 +440,9 @@ void prompt(){
      fflush(stdout);
    }
 
+   // since the last FG process was NOT killed by a signal, set boolean to false
+   wasLastFGKilledBySignal = false;
+
 
     // 3 parameters are pid of process waiting for, pointer to int to be filled with
     // exit status, then options
@@ -479,6 +498,10 @@ void checkCompletedChildren(){
 void sig_handler(int signo){
  int m = getpid();  
  printf("received SIGINT %d. Killed by signal %d\n",m,signo);
+
+ // also set the boolean to "true"
+ wasLastFGKilledBySignal = true; 
+
  fflush(stdout);
 }
 
