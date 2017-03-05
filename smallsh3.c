@@ -216,10 +216,15 @@ void prompt(){
     chdirSuccess = chdir(words[1]);
    }
 
+   if(chdirSuccess == 0){
+     exitStatus = 0; // set exit status to 0 for successful dir change
+   }
+
    // else if path is invalid, print error to user
    if(chdirSuccess != 0){
     printf("cd: %s: No such file or directory\n", words[1]);
     fflush(stdout);
+    exitStatus = 1; // set exit status to 1 since unable to change dir
    }
 
   }
