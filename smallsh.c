@@ -147,15 +147,27 @@ void prompt(){
   }
   
  
-  // needs to be updated to take in arguments to path location 
-  else if(strcmp(enteredCommand, "cd") == 0){
-   char cwd[1024];
-   getcwd(cwd, sizeof(cwd));
-   printf("Current dir:%s\n", cwd);
-   // chdir
-   chdir(getenv("HOME"));
-   getcwd(cwd, sizeof(cwd));
-   printf("current dir:%s\n", cwd);
+  // needs to be updated to take in arguments to path location
+  // if the first word that the user typed is "cd", use this conditional to change directories 
+  else if(strcmp(words[0], "cd") == 0){
+   
+   // if user only typed in "cd", (eg. there is not 2nd argument or path)
+   if(words[1] == NULL ){
+    chdir(getenv("HOME"));
+   }
+   // else if user typed in valid path, go to that path
+   // create a variable to record if chdir was sucessful. 0 means sucessful completion
+   int chdirSuccess;
+   if(words[1] != NULL){
+    chdirSuccess = chdir(words[1]);
+   }
+
+   // else if path is invalid, print error to user
+   if(chdirSuccess != 0){
+    printf("cd: %s: No such file or directory\n", words[1]);
+    fflush(stdout);
+   }
+
   }
 
   // Now that built ins have been checked, use fork and exit

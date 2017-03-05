@@ -88,7 +88,7 @@ void prompt(){
      if(strcmp(words[bg_iterator], "&") == 0){
        isBGprocess = true; // set boolean to true. 
        words[bg_iterator] = NULL;  // replace & with NULL, since we found the end of the command
-       printf("found & at index %d\n", bg_iterator); fflush(stdout);
+       //printf("found & at index %d\n", bg_iterator); fflush(stdout);
      }
      bg_iterator++;
    }
@@ -292,6 +292,14 @@ void prompt(){
     //printf("Command did not work. exit status: %d\n", exitStatus);
    } // end case 0
    default: {
+    
+   // Spec: shell will print the process id of a background process when it begins
+   if(isBGprocess == true){
+     printf("background pid is %d\n", spawnPid);
+     fflush(stdout);
+   }
+
+
     // 3 parameters are pid of process waiting for, pointer to int to be filled with
     // exit status, then options
     // if  "is background" use WNOHANG,  else for foreground use, 0 for option
