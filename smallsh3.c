@@ -38,7 +38,7 @@ void checkCompletedChildren();
 void main(){
 
   pidNum = (int) getpid();
-  //printf("THe pid number is %d\n", pidNum);
+  printf("In main, pid number is %d\n", pidNum);
   
   // register the handler. 
   // If you get sigint signal, call this sig_handler function
@@ -141,7 +141,8 @@ void prompt(){
       // integer to hold length of  command without the $$.  example foo$$ is len 5. but we 
       // want to start to copy pidNumString at location 3.  thus we need to chop off the last 2 chars(the $$)
       int locStart = strlen(newString) - 2;
-      memcpy(newString + locStart, pidNumString, 5); //  - 2 because we want to cut off the $$ (2 chars)
+      // copy into newString starting from locStart, pidNumString, using the strlen of pidNumString      
+      memcpy(newString + locStart, pidNumString, strlen(pidNumString)); 
       //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
 
       //fflush(stdout);
