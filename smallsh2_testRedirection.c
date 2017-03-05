@@ -19,6 +19,11 @@
 //  before exiting
 int pidNum;
 
+// boolean variable for SIGTSTP signal. For Ctrl+Z, the boolean changes each time user
+// enters Ctrl+Z.   Initialize to false since we allow users to do bg processes in the beginning
+bool noBGallowed = false;  
+
+
 // prototypes
 void prompt();
 void killProcesses();
@@ -90,6 +95,17 @@ void prompt(){
        words[bg_iterator] = NULL;  // replace & with NULL, since we found the end of the command
        //printf("found & at index %d\n", bg_iterator); fflush(stdout);
      }
+ 
+     // Also compare each element of word[] to see if it contains "$$"
+     /*    char *n = NULL;
+     n = strstr(words[bg_iterator], "$$");
+     if(n != NULL){
+      printf("substring found\n");
+     }
+     fflush(stdout);  
+     fflush(stdin);
+     */
+ 
      bg_iterator++;
    }
    
@@ -357,8 +373,20 @@ void sig_handler(int signo){
  fflush(stdout);
 }
 
+
+// This method handles signals for Cntrl + Z. It toggles the boolean "noBGallowed"
 void sig_handler2(int signo){
- printf("you pressed control z\n");
+ 
+ // if noBGallowed is false, set noBGallowed to true, and vice versa
+ if( noBGallowed == false){
+   noBGallowed = true;
+   //  print message to user to bg processes are no longer allowed
+   printf("Entering foreground-only mode (& is now ignored)\n");
+ }  else {
+    // set noBGallowed to false.  Therefore allowing background processes again.
+    noBGallowed = false;
+    printf("Exiting foreground-only mode\n");
+ }
  fflush(stdout);
 }
 
