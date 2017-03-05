@@ -87,13 +87,20 @@ void prompt(){
    }
 
    // Use a loop to iterate over words[] array to check for "&".
-   // If "&" is found, set isBGprocess boolean to true
+   // If "&" is found, set isBGprocess boolean to true IF noBGallowd == false
    int bg_iterator = 0;
    while(words[bg_iterator] != NULL){
      if(strcmp(words[bg_iterator], "&") == 0){
-       isBGprocess = true; // set boolean to true. 
-       words[bg_iterator] = NULL;  // replace & with NULL, since we found the end of the command
-       //printf("found & at index %d\n", bg_iterator); fflush(stdout);
+       
+       //  if noBGallowed boolean is set to true, don't set isBGprocess to true. 
+       //  just replace "&" with NULL.   
+       if(noBGallowed == true){
+         words[bg_iterator] = NULL;
+       }
+       else {   /* bg processes ARE ALLOWED */
+        isBGprocess = true; // set boolean to true. 
+        words[bg_iterator] = NULL;  // replace & with NULL, since we found the end of the command
+       }
      }
  
      // Also compare each element of word[] to see if it contains "$$"
@@ -381,11 +388,11 @@ void sig_handler2(int signo){
  if( noBGallowed == false){
    noBGallowed = true;
    //  print message to user to bg processes are no longer allowed
-   printf("Entering foreground-only mode (& is now ignored)\n");
+   printf("\nEntering foreground-only mode (& is now ignored)\n"); // \r for carriage return
  }  else {
     // set noBGallowed to false.  Therefore allowing background processes again.
     noBGallowed = false;
-    printf("Exiting foreground-only mode\n");
+    printf("\nExiting foreground-only mode\n"); 
  }
  fflush(stdout);
 }
