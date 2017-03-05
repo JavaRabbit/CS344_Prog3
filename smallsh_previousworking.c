@@ -186,16 +186,17 @@ void prompt(){
   }
 
    
-  // Comments are ignored. Comments also update status to 0
+  // TEMP CHECK for COMMENT
   else if(enteredCommand[0] == '#'){
-   exitStatus = 0; // update exit status
+   //printf("comment detected\n");
    continue;
   }
   
 
   // check if user entered a blank line. If so, shell should
-  // do nothing. Use continue. Blank lines do not change exitStatus
+  // do nothing. Use continue
   else if('\0' == enteredCommand[0]){
+   //printf("blank line detected\n");
    continue;
   }
   
@@ -215,15 +216,10 @@ void prompt(){
     chdirSuccess = chdir(words[1]);
    }
 
-   if(chdirSuccess == 0){
-     exitStatus = 0; // set exit status to 0 for successful dir change
-   }
-
    // else if path is invalid, print error to user
    if(chdirSuccess != 0){
     printf("cd: %s: No such file or directory\n", words[1]);
     fflush(stdout);
-    exitStatus = 1; // set exit status to 1 since unable to change dir
    }
 
   }
@@ -295,7 +291,7 @@ void prompt(){
       // Per the spec: output file is truncated if it exists, or created if it does not exist
       // printf("file found\n");
       // either open and truncate, or create new file 
-      outVal = open(words[gt+1], O_WRONLY | O_APPEND | O_CREAT, 0664);   //changed here
+      outVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
 
       // replace standard output with output file
       dup2(outVal, 1);
@@ -316,16 +312,6 @@ void prompt(){
      else if(lt > 0 && gt < 0){   /* eg.  wc < somefile.txt   */
       // set file descriptor for input file
       int inputVal;
- 
-      // test if words[lt+1] is null, send error msg to usr, set exit status, and 
-      // return to : prompt
-      if(words[lt+1] == NULL){
-        printf("No input file found\n");
-        fflush(stdout);
-        exitStatus = 1;
-        continue;
-      }
- 
       // try and read the input file located at words[lt + 1]
       inputVal = open(words[lt +1], O_RDONLY);
       // if input file is not found, send error message to user
@@ -372,7 +358,7 @@ void prompt(){
         continue;
        }   // end if inputVal < 0
 
-       outputVal = open(words[gt+1], O_WRONLY | O_APPEND | O_CREAT, 0664);
+       outputVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
       
        // replace standard input with input file
        dup2(inputVal, 0);
