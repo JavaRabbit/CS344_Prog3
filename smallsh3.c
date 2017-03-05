@@ -26,7 +26,7 @@ bool noBGallowed = false;
 
 // boolean to hold whether last FOREGROUND process was killed by a signal
 bool wasLastFGKilledBySignal = false;  
-
+int numOfSignalKill = -10; // some bogus number
 
 // prototypes
 void prompt();
@@ -193,10 +193,13 @@ void prompt(){
    if(wasLastFGKilledBySignal == false){
     printf("exit value %d\n", exitStatus);
    } else {  /* yes, terminated by singal */
-    printf("terminated by signal someNum\n");
+    printf("terminated by signal %d\n", numOfSignalKill);
    }
 
    wasLastFGKilledBySignal = false;  // set to false since "status" cmd is not killed by signal
+   
+   // also set the exit status to 0 since status return 0
+   exitStatus = 0;
  
    fflush(stdout);
 
@@ -500,7 +503,9 @@ void sig_handler(int signo){
  printf("received SIGINT %d. Killed by signal %d\n",m,signo);
 
  // also set the boolean to "true"
+ // and set the signal number which killed this foreground process
  wasLastFGKilledBySignal = true; 
+ numOfSignalKill = signo;
 
  fflush(stdout);
 }
