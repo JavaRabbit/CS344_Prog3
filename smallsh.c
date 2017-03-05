@@ -86,6 +86,8 @@ void prompt(){
     p = strtok(NULL, " ");
    }
 
+
+
    // Use a loop to iterate over words[] array to check for "&".
    // If "&" is found, set isBGprocess boolean to true IF noBGallowd == false
    int bg_iterator = 0;
@@ -102,12 +104,16 @@ void prompt(){
         words[bg_iterator] = NULL;  // replace & with NULL, since we found the end of the command
        }
      }
+     bg_iterator++;
+   } // end while
+
  
-     /*       
+     int bg = 0;
+     while(words[bg] != NULL){
      // Also compare each element of word[] to see if it contains "$$"
      char *n;
      //char * pp = "$$";
-     n = strstr(words[bg_iterator], "$$");
+     n = strstr(words[bg], "$$");
      if(n != NULL){
 
       // function to convert integer value to string
@@ -115,12 +121,14 @@ void prompt(){
       sprintf(pidNumString, "%d", pidNum);
       //  the length of the pid is usually 5.  it does not count terminator 
       //printf("The strin gis %s\n and len is %lu", pidNumString, strlen(pidNumString));
-      //
+      
       // Now append this pidNumString to $$
       char newString[20]; // allocate too much space
-      strcpy(newString, words[bg_iterator]);  // copy the string into newString
+      strcpy(newString, words[bg]);  // copy the string into newString
       //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
+     
       
+   
       // try to memcpy the pidNumString to newString at location 
       // integer to hold length of  command without the $$.  example foo$$ is len 5. but we 
       // want to start to copy pidNumString at location 3.  thus we need to chop off the last 2 chars(the $$)
@@ -132,13 +140,13 @@ void prompt(){
 
       //  now that newString contains our variable expansion, replace words[bg_iterator] with newString;
      // words[bg_iterator] = newString;
-     strcpy(words[bg_iterator], newString);  
+     strcpy(words[bg], newString);  
+
      }  // end if n != NULL 
-     
-     */
- 
-     bg_iterator++;
-   }
+
+
+     bg++;
+     } // end while
    
 
    // set words[i]  to NULL since we need to add NULL to the end
@@ -332,7 +340,54 @@ void prompt(){
       exitStatus = execvp(tempArr[0], tempArr);     
       exitStatus = 1; // set to 1 if execvp did not go sucessfully
      }   // end if lt > 0 && gt < 0
+  
+     // CASE 4: user uses both < and >
+     else if( lt > 0 && gt > 0){
+       //printf(" used both\n");
+       // set both file descriptors
+       int inputVal;
+       int outputVal;
+ 
+       inputVal = open(words[lt+1], O_RDONLY); // open the input file, the one specified after the "<" less than
    
+       // check if file is found, else send message to user and reshow : prompt
+       if(inputVal < 0){
+        printf("cannot open %s for input\n", words[lt+1]);
+        fflush(stdout);
+        exitStatus = 1;
+        continue;
+       }   // end if inputVal < 0
+
+       outputVal = open(words[gt+1], O_WRONLY | O_TRUNC | O_CREAT, 0664);
+      
+       // replace standard input with input file
+       dup2(inputVal, 0);
+
+      // replace standard output with output file
+      dup2(outputVal, 1);
+
+      // close file descriptors
+      close(inputVal);
+      close(outputVal);
+
+      // now copy the command which is "some cmd < someInput > someOutputFile"
+      // meaning we want to get the strings before the "<"
+      char *tempArr[513]; 
+      int wordsPointer = 0;
+      
+      // use for loop to copy command up to the "<"
+      for(wordsPointer = 0; wordsPointer < lt; wordsPointer++){
+        tempArr[wordsPointer] = words[wordsPointer];
+      }
+   
+      tempArr[wordsPointer] = NULL; // set end of command to NULL
+       
+      // execute the command
+      exitStatus = execvp(tempArr[0], tempArr);
+  
+     } // end CASE 4, user used both < and >
+
+ 
     // if command does not work, set built-in status to 1
     //exitStatus = 1;
     //printf("Command did not work. exit status: %d\n", exitStatus);
@@ -411,11 +466,11 @@ void sig_handler2(int signo){
  if( noBGallowed == false){
    noBGallowed = true;
    //  print message to user to bg processes are no longer allowed
-   printf("\nEntering foreground-only mode (& is now ignored)\n"); // \r for carriage return
+   //printf("\nEntering foreground-only mode (& is now ignored)\n"); // \r for carriage return
  }  else {
     // set noBGallowed to false.  Therefore allowing background processes again.
     noBGallowed = false;
-    printf("\nExiting foreground-only mode\n"); 
+    //printf("\nExiting foreground-only mode\n"); 
  }
  fflush(stdout);
 }
