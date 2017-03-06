@@ -294,10 +294,11 @@ void prompt(){
      exitStatus = execvp(words[0], words);  // just run the command
      printf("%s: no such file or directory.\n", words[0]); 
      // get here only if execvp did not complete successfully
-     if(exitStatus == -1){
+     /* if(exitStatus == -1){
         exitStatus = 1;   // set exit status to 1 as per spec
-     }
-     _exit(1);
+     } */
+     //_exit(1);
+     exit(123);  // this happens if execvp fails to start
     } 
     else if( lt < 0 && gt > 0){   // temp set to if, reset to else if
       // CASE 2: User only used " >"   eg.   ls > somefile.txt
@@ -353,7 +354,7 @@ void prompt(){
       inputVal = open(words[lt +1], O_RDONLY);
       // if input file is not found, send error message to user
       if(inputVal < 0){
-       printf("cannot open %s for input %d\n", words[lt+1], exitStatus);
+       printf("cannot open %s for input\n", words[lt+1]);
        fflush(stdout);
        exitStatus = 1; // set exit status to 1 since invalid file user is trying to open
        exit(1); 
@@ -458,7 +459,14 @@ void prompt(){
     // if  "is background" use WNOHANG,  else for foreground use, 0 for option
    
     if(isBGprocess == false){
-     waitpid(spawnPid, &childExitMethod, 0);   // use 0 as options. 
+     waitpid(spawnPid, &childExitMethod, 0);   // use 0 as options.
+     if(WEXITSTATUS(childExitMethod)== 0){
+        // child finished sucessfully, set exit status to 0
+        exitStatus = 0;
+     } else {
+       // execvp did not go sucessfully, set exit status to 1
+         exitStatus = 1;
+     }
     } 
    } // end default
    }// end of switch

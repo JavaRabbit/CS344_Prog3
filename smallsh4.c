@@ -354,7 +354,7 @@ void prompt(){
       inputVal = open(words[lt +1], O_RDONLY);
       // if input file is not found, send error message to user
       if(inputVal < 0){
-       printf("cannot open %s for input %d\n", words[lt+1], exitStatus);
+       printf("cannot open %s for input\n", words[lt+1]);
        fflush(stdout);
        exitStatus = 1; // set exit status to 1 since invalid file user is trying to open
        exit(1); 
@@ -466,7 +466,7 @@ void prompt(){
      } else {
        // execvp did not go sucessfully, set exit status to 1
          exitStatus = 1;
-    }
+     }
     } 
    } // end default
    }// end of switch
