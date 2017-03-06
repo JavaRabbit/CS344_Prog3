@@ -32,9 +32,7 @@ int numOfSignalKill = -10; // some bogus number
 int bgChildren[2000];
 int bgChildrenSize = 0; // size of the array
 
-
-
-
+//int exitStatus = 0; // to hold exit status
 
 // prototypes
 void prompt();
@@ -170,16 +168,6 @@ void prompt(){
    // because execvp reads until NULL is found
    words[i] = NULL;
   
-  /* 
-   int j;
-   for(j = 0; j < i+1; j++){
-    if(words[j] == NULL){
-      printf("thisi is null\n");
-    } else {
-     printf("%s\n", words[j]);
-    }
-   }
-   */ 
      
   }  // end if enteredCommand != NULL
 
@@ -192,6 +180,7 @@ void prompt(){
   // enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
   if(strcmp(enteredCommand, "exit") == 0){
    //printf("exiting loop\n"); WRITE METHOD TO KILL CHILDREN
+   // exitStatus = 0; // see if this works NOPE
    killProcesses();
    exit(0);
    //break;
@@ -316,9 +305,11 @@ void prompt(){
 
     // CASE 1:  NO redirection. User did not use ">" or "<" 
     if(lt < 0 && gt <0 ){
-     exitStatus = execvp(words[0], words);  // just run the command
-     printf("%s: no such file or directory\n", words[0]);   // get here only if execvp did not complete successfully
+     execvp(words[0], words);  // just run the command
+     printf("%s: no such file or directory. Exit %d\n", words[0],WIFEXITED(spawnPid)); 
+     // get here only if execvp did not complete successfully
      exitStatus = 1;   // set exit status to 1 as per spec
+     _exit(1);
     } 
     else if( lt < 0 && gt > 0){   // temp set to if, reset to else if
       // CASE 2: User only used " >"   eg.   ls > somefile.txt
@@ -343,7 +334,13 @@ void prompt(){
        tempArr[wordsPointer] = words[wordsPointer];  // copy into tempArr the first part of the command
       }
       tempArr[wordsPointer] = NULL;   // set the end of the command to null
-      int k = execvp(tempArr[0], tempArr); // run the command
+      execvp(tempArr[0], tempArr); // run the command
+   
+      // if execvp failed to run
+      exitStatus =1;
+     // continue;
+     exit(1);
+  
      }  // end if lt < 0 && gt > 0 
      
      // CASE 3:  if user used "<" but not ">"
@@ -368,17 +365,18 @@ void prompt(){
       inputVal = open(words[lt +1], O_RDONLY);
       // if input file is not found, send error message to user
       if(inputVal < 0){
-       printf("cannot open %s for input\n", words[lt+1]);
+       printf("cannot open %s for input %d\n", words[lt+1], exitStatus);
        fflush(stdout);
        exitStatus = 1; // set exit status to 1 since invalid file user is trying to open
-       continue;   // to break out of this loop and reshow : prompt to user		     
+       exit(1); 
+       //continue;   // to break out of this loop and reshow : prompt to user		     
       }
 
       // input file is found, replace standard input with input file
       dup2(inputVal, 0);
 
       close(inputVal); // close file descriptor
-
+      
       // make a copy of the command up until the "<"
       char * tempArr[513];
       int wordsPointer = 0;
@@ -389,9 +387,14 @@ void prompt(){
       tempArr[wordsPointer] == NULL; // set the end of the truncated command to NULL
  
       // now execute the command
-      execvp(tempArr[0], tempArr);     
-      exitStatus = 1; // set to 1 if execvp did not go sucessfully
-      continue; // to go to top of while loop
+      int mm = execvp(tempArr[0], tempArr);
+      if( mm < 0){
+       exit(1);
+      }
+      //perror("execvp");
+      //exit(EXIT_FAILURE);
+      //exitStatus = 1; // set to 1 if execvp did not go sucessfully
+      //continue; // to go to top of while loop
      }   // end if lt > 0 && gt < 0
   
      // CASE 4: user uses both < and >
@@ -437,7 +440,7 @@ void prompt(){
        
       // execute the command
       exitStatus = execvp(tempArr[0], tempArr);
-  
+      exit(1);
      } // end CASE 4, user used both < and >
 
  
@@ -454,7 +457,6 @@ void prompt(){
 
      // add to bgChildren array
      bgChildren[bgChildrenSize] = spawnPid;
-     printf("again the bg pid is %d\n", bgChildren[bgChildrenSize]);
      bgChildrenSize++; 
    }
 
@@ -472,10 +474,6 @@ void prompt(){
    } // end default
    }// end of switch
   }  
-
-
-
-
  }  // end of while loop
 
 } // end of prompt() 
@@ -493,7 +491,7 @@ void killProcesses(){
  int i = 0;
  for(i = 0; i < bgChildrenSize; i++){
   kill(bgChildren[i], SIGKILL);
-  printf("killed of child %d\n", bgChildren[i]); 
+  //printf("killed off child pid: %d\n", bgChildren[i]); 
  }
 
   exit(0);
@@ -519,10 +517,8 @@ void checkCompletedChildren(){
   int i = 0;
   for(i = 0; i < bgChildrenSize; i++){
    if(bgChildren[i] == childPid){
-    printf("found in bg array\n");
     bgChildrenSize--;
-    printf("size is now %d\n", bgChildrenSize);
-    fflush(stdout);
+    bgChildren[i] = 0; // just set to abitrary, it will be written over anyways
     
     // Now move elements over if needed
     int j = i+1;

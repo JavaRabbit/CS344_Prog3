@@ -1,10 +1,8 @@
-forktest
-forktest.c
-p3testscript
-readme.txt
-smallsh
-smallsh1
-smallsh1.c
-smallsh2_testRedirection
-smallsh2_testRedirection.c
-smallsh.c
+To Compile:
+
+gcc -o smallsh smallsh.c
+
+
+
+
+
