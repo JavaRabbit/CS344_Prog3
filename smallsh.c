@@ -28,6 +28,14 @@ bool noBGallowed = false;
 bool wasLastFGKilledBySignal = false;  
 int numOfSignalKill = -10; // some bogus number
 
+// int array to hold bg child pids
+int bgChildren[2000];
+int bgChildrenSize = 0; // size of the array
+
+
+
+
+
 // prototypes
 void prompt();
 void killProcesses();
@@ -184,8 +192,7 @@ void prompt(){
   // enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
   if(strcmp(enteredCommand, "exit") == 0){
    //printf("exiting loop\n"); WRITE METHOD TO KILL CHILDREN
-   //killProcesses();
-   //pkill pidNum; /// ???????
+   killProcesses();
    exit(0);
    //break;
   }
@@ -444,6 +451,11 @@ void prompt(){
    if(isBGprocess == true){
      printf("background pid is %d\n", spawnPid);
      fflush(stdout);
+
+     // add to bgChildren array
+     bgChildren[bgChildrenSize] = spawnPid;
+     printf("again the bg pid is %d\n", bgChildren[bgChildrenSize]);
+     bgChildrenSize++; 
    }
 
    // since the last FG process was NOT killed by a signal, set boolean to false
@@ -475,8 +487,16 @@ void prompt(){
  * Purpose of this method: to kill all child jobs and processes
  */
 void killProcesses(){
- printf("kill Processes called %d\n", pidNum);
- exit(0);
+ //printf("kill Processes called %d\n", pidNum);
+  
+ // iterate over bgChildren array and kill of bgChildren
+ int i = 0;
+ for(i = 0; i < bgChildrenSize; i++){
+  kill(bgChildren[i], SIGKILL);
+  printf("killed of child %d\n", bgChildren[i]); 
+ }
+
+  exit(0);
 
 }
 
@@ -493,7 +513,25 @@ void checkCompletedChildren(){
  // a background child process has terminated. Print to user
  if (WIFEXITED(exitedChildMethod) != 0){  // != means exited normally
   printf("background pid %d is done: exit value %d\n", childPid , WEXITSTATUS(exitedChildMethod) );
- }
+  fflush(stdout);
+
+  // search bgChildren[] array, and remove from the array
+  int i = 0;
+  for(i = 0; i < bgChildrenSize; i++){
+   if(bgChildren[i] == childPid){
+    printf("found in bg array\n");
+    bgChildrenSize--;
+    printf("size is now %d\n", bgChildrenSize);
+    fflush(stdout);
+    
+    // Now move elements over if needed
+    int j = i+1;
+    for(j = i+1; j < bgChildrenSize; j++){
+       bgChildren[j-1] = bgChildren[j];
+    }
+   }  // end if bgChildren[i] == childPid
+  } // end for loop
+ }  // end if(WIFEXITED...
  
 } // end of void checkCompletedChildren
 

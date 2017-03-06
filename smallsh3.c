@@ -46,7 +46,7 @@ void checkCompletedChildren();
 void main(){
 
   pidNum = (int) getpid();
-  printf("In main, pid number is %d\n", pidNum);
+  //printf("In main, pid number is %d\n", pidNum);
   
   // register the handler. 
   // If you get sigint signal, call this sig_handler function
@@ -192,6 +192,7 @@ void prompt(){
   // enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
   if(strcmp(enteredCommand, "exit") == 0){
    //printf("exiting loop\n"); WRITE METHOD TO KILL CHILDREN
+   // runPrompt = false; // doesn' work :(
    killProcesses();
    exit(0);
    //break;
@@ -472,10 +473,6 @@ void prompt(){
    } // end default
    }// end of switch
   }  
-
-
-
-
  }  // end of while loop
 
 } // end of prompt() 
@@ -519,10 +516,8 @@ void checkCompletedChildren(){
   int i = 0;
   for(i = 0; i < bgChildrenSize; i++){
    if(bgChildren[i] == childPid){
-    printf("found in bg array\n");
     bgChildrenSize--;
-    printf("size is now %d\n", bgChildrenSize);
-    fflush(stdout);
+    bgChildren[i] = 0; // just set to abitrary, it will be written over anyways
     
     // Now move elements over if needed
     int j = i+1;
