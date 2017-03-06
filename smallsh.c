@@ -29,10 +29,10 @@ bool wasLastFGKilledBySignal = false;
 int numOfSignalKill = -10; // some bogus number
 
 // int array to hold bg child pids
-int bgChildren[2000];
+int bgChildren[1000];
 int bgChildrenSize = 0; // size of the array
 
-//int exitStatus = 0; // to hold exit status
+int exitStatus = 0; // to hold exit status
 
 // prototypes
 void prompt();
@@ -43,8 +43,8 @@ void checkCompletedChildren();
 
 void main(){
 
-  pidNum = (int) getpid();
-  printf("In main, pid number is %d\n", pidNum);
+  pidNum = (int)getpid();
+  //printf("In main, pid number is %d\n", pidNum);
   
   // register the handler. 
   // If you get sigint signal, call this sig_handler function
@@ -58,7 +58,7 @@ void prompt(){
  bool runPrompt = true;
  
  // variable to hold exit status. Used by built-in command status
- int exitStatus = 0;   // initialize to 0
+// int exitStatus = 0;   // initialize to 0
 
  while(runPrompt){
   
@@ -78,7 +78,7 @@ void prompt(){
   // get user input string 
   fgets(enteredCommand, MAX_LENGTH, stdin);
   //printf("%s\n", enteredCommand);
-  fflush(stdout);
+  //fflush(stdout);
   // fgets adds a new line to the entered text eg. exit\n\0
   // get rid of this newline. change \n to \0
   enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
@@ -95,7 +95,6 @@ void prompt(){
     words[i++] = p;   
     p = strtok(NULL, " ");
    }
-
 
 
    // Use a loop to iterate over words[] array to check for "&".
@@ -141,7 +140,6 @@ void prompt(){
       strcpy(newString, words[bg]);  // copy the string into newString
       //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
      
-      
    
       // try to memcpy the pidNumString to newString at location 
       // integer to hold length of  command without the $$.  example foo$$ is len 5. but we 
@@ -149,9 +147,7 @@ void prompt(){
       int locStart = strlen(newString) - 2;
       // copy into newString starting from locStart, pidNumString, using the strlen of pidNumString      
       memcpy(newString + locStart, pidNumString, strlen(pidNumString)); 
-      //printf("the new string is:%s and length is %lu\n", newString, strlen(newString));
 
-      //fflush(stdout);
 
       //  now that newString contains our variable expansion, replace words[bg_iterator] with newString;
      // words[bg_iterator] = newString;
@@ -179,11 +175,8 @@ void prompt(){
   //  To get rid of this newline change \n to \0
   // enteredCommand[strcspn(enteredCommand, "\n")] = '\0';
   if(strcmp(enteredCommand, "exit") == 0){
-   //printf("exiting loop\n"); WRITE METHOD TO KILL CHILDREN
-   // exitStatus = 0; // see if this works NOPE
    killProcesses();
    exit(0);
-   //break;
   }
 
   // if user types in "status", print out exit status
@@ -295,20 +288,15 @@ void prompt(){
     // append NULL to location end of the noRedirarray
     noRedir[noRedirPointer] = NULL;
     
-    /* 
-    int p = 0;
-    while( noRedir[p] != NULL){
-     printf("%s\n", noRedir[p]);
-     p++;
-    }
-    */
 
     // CASE 1:  NO redirection. User did not use ">" or "<" 
     if(lt < 0 && gt <0 ){
-     execvp(words[0], words);  // just run the command
-     printf("%s: no such file or directory. Exit %d\n", words[0],WIFEXITED(spawnPid)); 
+     exitStatus = execvp(words[0], words);  // just run the command
+     printf("%s: no such file or directory.\n", words[0]); 
      // get here only if execvp did not complete successfully
-     exitStatus = 1;   // set exit status to 1 as per spec
+     if(exitStatus == -1){
+        exitStatus = 1;   // set exit status to 1 as per spec
+     }
      _exit(1);
     } 
     else if( lt < 0 && gt > 0){   // temp set to if, reset to else if
@@ -449,7 +437,8 @@ void prompt(){
     //printf("Command did not work. exit status: %d\n", exitStatus);
    } // end case 0
    default: {
-    
+ 
+      
    // Spec: shell will print the process id of a background process when it begins
    if(isBGprocess == true){
      printf("background pid is %d\n", spawnPid);
